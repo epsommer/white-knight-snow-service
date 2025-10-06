@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  role          UserRole  @default(CLIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  properties    Property[]
+  driver        Driver?
+  sessions      Session[]
+  accounts      Account[]
+}
+
+enum UserRole {
+  ADMIN
+  DRIVER
+  CLIENT
+}
+
+model Property {
+  id            String    @id @default(cuid())
+  address       String
+  latitude      Float
+  longitude     Float
+  status        PropertyStatus @default(PENDING)
+  snowDepth     Float     @default(0)
+  priority      Int       @default(5)
+
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+
+  serviceTickets ServiceTicket[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum PropertyStatus {
+  PENDING
+  IN_PROGRESS
+  CLEARED
+  SKIPPED
+}
+
+model Driver {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id])
+
+  licenseNumber String
+  phone         String
+  status        DriverStatus @default(OFFLINE)
+  currentLat    Float?
+  currentLng    Float?
+
+  fleetId       String?
+  fleet         Fleet?    @relation(fields: [fleetId], references: [id])
+
+  serviceTickets ServiceTicket[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum DriverStatus {
+  ONLINE
+  OFFLINE
+  ON_ROUTE
+  AT_PROPERTY
+  EMERGENCY
+}
+
+model Fleet {
+  id            String    @id @default(cuid())
+  vehicleNumber String    @unique
+  vehicleType   VehicleType
+  capacity      Int
+  fuelLevel     Float     @default(100)
+  status        FleetStatus @default(AVAILABLE)
+
+  gpsDeviceId   String?
+  lastMaintenance DateTime?
+
+  drivers       Driver[]
+  routes        Route[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum VehicleType {
+  PLOW_TRUCK
+  SALT_SPREADER
+  SKID_STEER
+  PICKUP
+}
+
+enum FleetStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+model Route {
+  id            String    @id @default(cuid())
+  name          String
+  fleetId       String
+  fleet         Fleet     @relation(fields: [fleetId], references: [id])
+
+  optimizedPath Json      // GeoJSON LineString
+  estimatedTime Int       // minutes
+  priority      Int       @default(5)
+  status        RouteStatus @default(PLANNED)
+
+  serviceTickets ServiceTicket[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum RouteStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model ServiceTicket {
+  id            String    @id @default(cuid())
+  propertyId    String
+  property      Property  @relation(fields: [propertyId], references: [id])
+
+  driverId      String?
+  driver        Driver?   @relation(fields: [driverId], references: [id])
+
+  routeId       String?
+  route         Route?    @relation(fields: [routeId], references: [id])
+
+  status        TicketStatus @default(PENDING)
+  priority      Int       @default(5)
+
+  scheduledAt   DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+
+  snowDepthBefore Float?
+  snowDepthAfter  Float?
+
+  photosBefore  String[]  // URLs to photos
+  photosAfter   String[]  // URLs to photos
+
+  notes         String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum TicketStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model WeatherData {
+  id            String    @id @default(cuid())
+  latitude      Float
+  longitude     Float
+
+  temperature   Float
+  snowfall      Float     // inches
+  windSpeed     Float
+  visibility    Float
+
+  forecast      Json      // Detailed forecast data
+  radarImage    String?   // URL to radar image
+
+  recordedAt    DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
