@@ -88,7 +88,7 @@ export function PropertyMarker({ property, position, onClick }: PropertyMarkerPr
               Status: {property.status.replace('_', ' ')}
             </div>
             <div className="text-xs text-gray-300">
-              Snow Depth: {property.snowDepth.toFixed(1)}"
+              Snow Depth: {property.snowDepth.toFixed(1)}&quot;
             </div>
           </div>
         </Html>

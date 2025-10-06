@@ -27,7 +27,7 @@ export function MapboxMap({
   const map = useRef<mapboxgl.Map | null>(null);
 
   useEffect(() => {
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || map.current) return;
 
     // Set the access token
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
@@ -55,7 +55,9 @@ export function MapboxMap({
 
     return () => {
       map.current?.remove();
+      map.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update markers when properties change

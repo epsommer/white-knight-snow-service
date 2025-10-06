@@ -28,21 +28,18 @@ export function SnowMap({
   centerLat = 40.7128,
   centerLng = -74.0060
 }: SnowMapProps) {
-  // Convert lat/lng to 3D positions (simplified projection)
-  const convertToPosition = (lat: number, lng: number): [number, number, number] => {
-    // Scale factor for visualization
-    const scale = 1000;
-    const x = (lng - centerLng) * scale;
-    const z = (lat - centerLat) * scale;
-    return [x, 0, z];
-  };
-
   // Convert properties to positioned markers
   const markers = useMemo(() => {
-    return properties.map(property => ({
-      ...property,
-      position: convertToPosition(property.latitude, property.longitude),
-    }));
+    // Convert lat/lng to 3D positions (simplified projection)
+    const scale = 1000;
+    return properties.map(property => {
+      const x = (property.longitude - centerLng) * scale;
+      const z = (property.latitude - centerLat) * scale;
+      return {
+        ...property,
+        position: [x, 0, z] as [number, number, number],
+      };
+    });
   }, [properties, centerLat, centerLng]);
 
   return (

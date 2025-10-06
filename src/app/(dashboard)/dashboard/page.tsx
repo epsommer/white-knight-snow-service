@@ -185,7 +185,7 @@ function PropertyCard({
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate">{property.address}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            Snow: {property.snowDepth.toFixed(1)}"
+            Snow: {property.snowDepth.toFixed(1)}&quot;
           </p>
         </div>
         <div

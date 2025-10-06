@@ -4,9 +4,10 @@ import { prisma } from '@/lib/prisma';
 // GET property by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const property = await prisma.property.findUnique({
       where: { id: params.id },
       include: {
@@ -42,9 +43,10 @@ export async function GET(
 // PATCH update property
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const body = await request.json();
     const { status, snowDepth, priority } = body;
 
@@ -83,9 +85,10 @@ export async function PATCH(
 // DELETE property
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     await prisma.property.delete({
       where: { id: params.id },
     });

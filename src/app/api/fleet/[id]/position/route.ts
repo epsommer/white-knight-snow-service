@@ -4,9 +4,10 @@ import { prisma } from '@/lib/prisma';
 // POST update fleet position (for GPS tracking)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params;
     const body = await request.json();
     const { latitude, longitude, driverId } = body;
 
