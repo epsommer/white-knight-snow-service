@@ -238,6 +238,34 @@ lsof -ti:3000 | xargs kill -9
 - See `WEBSOCKET_ERRORS.md` for detailed troubleshooting
 - Note: App works fine without WebSocket (real-time is optional)
 
+## Maintenance Mode
+
+You can enable maintenance mode to show users a maintenance page while you work on updates:
+
+**To enable maintenance mode on Vercel:**
+
+1. Go to your Vercel project dashboard
+2. Navigate to Settings → Environment Variables
+3. Add: `NEXT_PUBLIC_MAINTENANCE_MODE` = `true`
+4. Redeploy or wait for automatic deployment
+
+**To disable maintenance mode:**
+
+1. Change `NEXT_PUBLIC_MAINTENANCE_MODE` to `false` in Vercel
+2. Redeploy
+
+**For local development:**
+
+Set in `.env.local`:
+```env
+NEXT_PUBLIC_MAINTENANCE_MODE="true"
+```
+
+When enabled, all routes except `/maintenance` and API routes will redirect to the maintenance page. This allows you to:
+- Keep the production site up with a maintenance message
+- Continue working on development/staging environments
+- Make updates without users seeing broken features
+
 ## Phase 1 Success Criteria
 
 ✅ Next.js project runs locally
