@@ -9,22 +9,42 @@ export function useSocket() {
 
   useEffect(() => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000';
+
     const socketInstance = io(socketUrl, {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'], // Try polling first
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+      timeout: 10000,
+      autoConnect: true,
     });
 
     socketInstance.on('connect', () => {
-      console.log('Socket connected');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Socket connected');
+      }
       setIsConnected(true);
     });
 
-    socketInstance.on('disconnect', () => {
-      console.log('Socket disconnected');
+    socketInstance.on('disconnect', (reason) => {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔌 Socket disconnected:', reason);
+      }
       setIsConnected(false);
     });
 
     socketInstance.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      // Silently handle connection errors - just update state
+      setIsConnected(false);
+      // Only log in development and not for timeout errors
+      if (process.env.NODE_ENV === 'development' && error.message !== 'timeout') {
+        console.warn('⚠️ Socket connection issue (this is normal if server is not running)');
+      }
+    });
+
+    socketInstance.on('error', () => {
+      // Silently handle errors
       setIsConnected(false);
     });
 

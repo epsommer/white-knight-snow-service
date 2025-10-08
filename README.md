@@ -232,6 +232,12 @@ lsof -ti:3000 | xargs kill -9
 - Check GPU acceleration is enabled
 - Use Chrome DevTools Performance tab
 
+**WebSocket connection errors:**
+- Make sure you're running `npm run dev` (not `next dev`)
+- Check that port 3000 is available
+- See `WEBSOCKET_ERRORS.md` for detailed troubleshooting
+- Note: App works fine without WebSocket (real-time is optional)
+
 ## Phase 1 Success Criteria
 
 ✅ Next.js project runs locally
